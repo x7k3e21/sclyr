@@ -8,9 +8,11 @@
 
 #include "sclyr.h"
 
+struct wl_display *SCLYR_DISPLAY = NULL;
+
 int32_t main(int32_t argc, char *argv[])
 {
-    struct wl_display *SCLYR_DISPLAY = wl_display_connect(NULL);
+    SCLYR_DISPLAY = wl_display_connect(NULL);
 
     if (SCLYR_DISPLAY == NULL)
     {
