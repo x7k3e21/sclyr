@@ -25,6 +25,9 @@ struct SCLYR_STATE
     struct wl_shm *WL_SHARED_MEMORY;
 };
 
+#define WL_COMPOSITOR_TARGET_VERSION 6
+#define WL_SHM_TARGET_VERSION 2
+
 static void rl_handle_global(void *data, struct wl_registry *registry, 
     uint32_t name, const char *interface, uint32_t version)
 {
@@ -34,22 +37,20 @@ static void rl_handle_global(void *data, struct wl_registry *registry,
 
     if (strcmp(interface, wl_compositor_interface.name) == 0)
     {
-        sclyr_handle_state->WL_COMPOSITOR = wl_registry_bind
-        (
-            registry, name, &wl_compositor_interface, version
+        sclyr_handle_state->WL_COMPOSITOR = wl_registry_bind(
+            registry, name, &wl_compositor_interface, WL_COMPOSITOR_TARGET_VERSION
         );
 
-        fprintf(stdout, "Successfully bound '%s' to display!\n", interface);
+        fprintf(stdout, "Attempting to bound '%s' to display.\n", interface);
     }
 
-    if (strcmp(interface, wl_shm_interface.name) == 0)
+    else if (strcmp(interface, wl_shm_interface.name) == 0)
     {
-        sclyr_handle_state->WL_SHARED_MEMORY = wl_registry_bind
-        (
-            registry, name, &wl_shm_interface, version
+        sclyr_handle_state->WL_SHARED_MEMORY = wl_registry_bind(
+            registry, name, &wl_shm_interface, WL_SHM_TARGET_VERSION
         );
 
-        fprintf(stdout, "Successfully bound '%s' to display!\n", interface);
+        fprintf(stdout, "Attempting to bound '%s' to display.\n", interface);
     }
 }
 
@@ -84,6 +85,17 @@ int32_t main(int32_t argc, char *argv[])
     
     wl_registry_add_listener(SCLYR_REGISTRY, &SCLYR_REGISTRY_LISTENER, &sclyr_runtime_state);
     wl_display_roundtrip(SCLYR_DISPLAY);
+
+    if (sclyr_runtime_state.WL_SHARED_MEMORY == NULL)
+    {
+        fprintf(stderr, "Compositor does not support 'wl_shm' interface!\n");
+
+        return EXIT_FAILURE;
+    }
+
+    wl_shm_destroy(sclyr_runtime_state.WL_SHARED_MEMORY);
+
+    wl_registry_destroy(SCLYR_REGISTRY);
 
     wl_display_disconnect(SCLYR_DISPLAY);
 
