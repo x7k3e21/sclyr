@@ -19,12 +19,6 @@ struct wl_display *SCLYR_DISPLAY = NULL;
 const int32_t SCLYR_WINDOW_WIDTH = 800;
 const int32_t SCLYR_WINDOW_HEIGHT = 600;
 
-struct SCLYR_STATE
-{
-    struct wl_compositor *WL_COMPOSITOR;
-    struct wl_shm *WL_SHARED_MEMORY;
-};
-
 #define WL_COMPOSITOR_TARGET_VERSION 6
 #define WL_SHM_TARGET_VERSION 2
 
@@ -84,7 +78,13 @@ int32_t main(int32_t argc, char *argv[])
     struct wl_registry *SCLYR_REGISTRY = wl_display_get_registry(SCLYR_DISPLAY);
     
     wl_registry_add_listener(SCLYR_REGISTRY, &SCLYR_REGISTRY_LISTENER, &sclyr_runtime_state);
-    wl_display_roundtrip(SCLYR_DISPLAY);
+    
+    if(wl_display_roundtrip(SCLYR_DISPLAY) == -1)
+    {
+        fprintf(stderr, "An error occured while dispatching events!\n");
+
+        return EXIT_FAILURE;
+    }
 
     if (sclyr_runtime_state.WL_SHARED_MEMORY == NULL)
     {
